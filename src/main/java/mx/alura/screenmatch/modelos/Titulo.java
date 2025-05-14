@@ -1,11 +1,18 @@
 package mx.alura.screenmatch.modelos;
 
-import com.google.gson.annotations.SerializedName;
+import mx.alura.screenmatch.exceptions.ErrorValueDuracionException;
+import mx.alura.screenmatch.herramientas.TituloOmdbApi;
 
 public class Titulo implements Comparable<Titulo> {
-    @SerializedName("Title")
+    /*
+     * Manjeo directo de la Class con JSON
+     * 
+     * import com.google.gson.annotations.SerializedName;
+     * 
+     * @SerializedName("Title") Agregamos el alias del atributo del valor del JSON
+     * private String nombre;
+     */
     private String nombre;
-    @SerializedName("Year")
     private int fechaDeLanzamiento;
     private boolean incluidoEnElPlan;
     private double sumaDeLasEvaluaciones;
@@ -15,6 +22,30 @@ public class Titulo implements Comparable<Titulo> {
     public Titulo(String nombre, int fechaDeLanzamiento) {
         this.nombre = nombre;
         this.fechaDeLanzamiento = fechaDeLanzamiento;
+    }
+
+    public Titulo(TituloOmdbApi titulo) throws ErrorValueDuracionException {
+        this.nombre = titulo.title();
+        this.fechaDeLanzamiento = Integer.valueOf(titulo.year());
+        /*
+         * Transformacion de Excepcion
+         * Si es el caso de enviar informacion sin importar el dato de duración hacer
+         * esta implementación
+         * this.duracionEnMinutos = (titulo.runtime().contains("N/A")) ? 0
+         * : Integer.parseInt(titulo.runtime().split(" ")[0]);
+         */
+        // Manejo de Excepciones
+        if (titulo.runtime().contains("N/A")) {
+            throw new ErrorValueDuracionException(
+                    "Contenido del Atributo Duracion contiene N/A," +
+                            "por seguimiento del proceso no sepodra mostrar información");
+        }
+        /*
+         * Rescatamos el primer valor antes del espacio (" "), se realizaria de la
+         * siguiente manera:
+         * 60 min --> split("") --> ["60","min"] --> [0] --> "60" --> int --> 60
+         */
+        this.duracionEnMinutos = Integer.parseInt(titulo.runtime().split(" ")[0]);
     }
 
     public String getNombre() {
@@ -69,7 +100,8 @@ public class Titulo implements Comparable<Titulo> {
 
     @Override
     public String toString() {
-        return this.getNombre() + "\t(" + getFechaDeLanzamiento() + ")";
+        return this.getNombre() + "\t(" + getFechaDeLanzamiento() + ")" +
+                ((getDuracionEnMinutos() > 0) ? " Duración : " + getDuracionEnMinutos() + " min" : "");
     }
 
     @Override

@@ -12,10 +12,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.Scanner;
 
+import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
+import mx.alura.screenmatch.exceptions.ErrorValueDuracionException;
 import mx.alura.screenmatch.herramientas.LimpiarConsola;
+import mx.alura.screenmatch.herramientas.TituloOmdbApi;
 import mx.alura.screenmatch.modelos.Titulo;
 
 public class Main {
@@ -57,26 +61,48 @@ public class Main {
             // Enviar la solicitud y obtener la respuesta
             HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
 
-            // Imprimir la respuesta JSON
             String resp_json = response.body();
-            Gson gson = new Gson();
-            Titulo movie_resp = gson.fromJson(resp_json, Titulo.class);
 
+            // Imprimir la respuesta JSON
+            /*
+             * Forma de imprementacion de JSON a Class
+             * 1.- En este caso agregamos directo la class Titulo, para los valores de JSON,
+             * con ayuda de la alias @SerializedName("Atributo-JSON")
+             * CODE:
+             * Gson gson = new Gson();
+             * Titulo movie_trans = gson.fromJson(resp_json, Titulo.class);
+             * 
+             * 2.- En este caso agregamos un record para la transformacion de daros de JSON
+             * a la class Titulo
+             */
+
+            Gson gson = new GsonBuilder()
+                    .setFieldNamingPolicy(
+                            FieldNamingPolicy.UPPER_CAMEL_CASE)
+                    .create();
+            TituloOmdbApi movie_resp = gson.fromJson(resp_json, TituloOmdbApi.class);
+            Titulo movie_trans = new Titulo(movie_resp);
             // Mostrar el resultado
-            if (movie_resp != null && movie_resp.getNombre() != null) {
+            if (movie_trans != null && movie_trans.getNombre() != null) {
                 System.out.println("\n[RESULTADO] Título encontrado:");
-                System.out.println("\t" + movie_resp);
+                System.out.println("\t" + movie_trans);
             } else {
-                System.out.println("\n[ERROR] No se encontró la película con el título: " + movieTitle);
+                System.out.println("\n[ERROR] No se encontró la película con el título: " +
+                        movieTitle);
             }
-
         } catch (JsonSyntaxException e) {
+            new LimpiarConsola().start();
             System.out.println("\n[ERROR] Hubo un problema al procesar la respuesta. " +
                     "Verifica que la API esté funcionando correctamente.");
             e.printStackTrace();
+        } catch (ErrorValueDuracionException e) {
+            System.out.println("\n[ERROR] Ocurrió un error inesperado: " + e.getMessage());
         } catch (Exception e) {
+            // new LimpiarConsola().start();
             System.out.println("\n[ERROR] Ocurrió un error inesperado: " + e.getMessage());
             e.printStackTrace();
+        } finally {
+            System.out.println("[>] Finalizo el programa!");
         }
     }
 
