@@ -127,6 +127,8 @@ java -cp bin:lib/gson-2.8.8.jar mx.alura.screenmatch.Main
 │   │   │               │   ├── CalculadoraDeTiempo.java
 │   │   │               │   ├── Clasificable.java
 │   │   │               │   └── FiltroRecomendacion.java
+│   │   │               ├── exceptions	#Manejos de Excepciones sobre casos de uso
+│   │   │               │   └── ErrorValueDuracionException.java
 │   │   │               ├── herramientas  # Clases auxiliares.
 │   │   │               │   └── LimpiarConsola.java
 │   │   │               ├── Main.java      # Punto de entrada del programa (método main).
@@ -150,7 +152,8 @@ java -cp bin:lib/gson-2.8.8.jar mx.alura.screenmatch.Main
 │   │       └── alura
 │   │           └── screenmatch
 │   │               ├── calculos
-│   │               │   ├── CalculadoraDeTiempo.class
+│   │     
+      │   ├── CalculadoraDeTiempo.class
 │   │               │   ├── Clasificable.class
 │   │               │   └── FiltroRecomendacion.class
 │   │               ├── herramientas
@@ -173,3 +176,4 @@ java -cp bin:lib/gson-2.8.8.jar mx.alura.screenmatch.Main
     Año: 2010
     Género: Action, Adventure, Sci-Fi
     Director: Christopher Nolan
+```
