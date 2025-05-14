@@ -127,7 +127,7 @@ java -cp bin:lib/gson-2.8.8.jar mx.alura.screenmatch.Main
 │   │   │               │   ├── CalculadoraDeTiempo.java
 │   │   │               │   ├── Clasificable.java
 │   │   │               │   └── FiltroRecomendacion.java
-│   │   │               ├── exceptions	#Manejos de Excepciones sobre casos de uso
+│   │   │               ├── exceptions  #Manejos de Excepciones sobre casos de uso
 │   │   │               │   └── ErrorValueDuracionException.java
 │   │   │               ├── herramientas  # Clases auxiliares.
 │   │   │               │   └── LimpiarConsola.java
