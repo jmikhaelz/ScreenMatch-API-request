@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>mx.alura.screenmatch</groupId>
+    <artifactId>apiresquest</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+    </properties>
+    <!-- 
+    Agregamos el archivo JAR Manual
+    ${project.basedir}: Esta es una variable de Maven que apunta a la raíz de tu proyecto, por lo que
+    la ruta que proporcionas debe ser relativa a esa raíz. Al colocar el .jar dentro de lib/, tu
+    ruta ahora es válida.
+
+    system scope: El system scope le dice a Maven que no descargue la dependencia desde un repositorio
+        remoto, sino que la utilice directamente desde la ruta que proporcionas.
+    -->
+    <!--
+        Ejemplo:
+    <dependencies>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.13.1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/gson-2.13.1.jar</systemPath>
+        </dependency>
+    </dependencies>-->
+
+    <dependencies>
+        <!-- GSON -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.13.1</version>
+        </dependency>
+    </dependencies>
+    
+</project>

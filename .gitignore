@@ -1,0 +1,41 @@
+# Ignorar el archivo de configuración con claves privadas
+/src/main/resources/config/config.properties
+
+# Maven
+/target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+
+# Compiled class files
+*.class
+
+# Package Files
+*.jar
+*.war
+*.ear
+
+# IntelliJ IDEA
+*.iml
+.idea/
+out/
+
+# Eclipse
+.project
+.classpath
+.c9/
+.settings/
+
+# VS Code
+.vscode/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Otros
+/lib/
+/target/test-classes
+/src/test/java
+/target/test-classes

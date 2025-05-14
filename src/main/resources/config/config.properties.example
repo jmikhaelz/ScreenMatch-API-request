@@ -1,0 +1,4 @@
+# config.properties.example
+# Rellena estos valores con tus credenciales reales
+
+omdbapi_key=KEY-here
