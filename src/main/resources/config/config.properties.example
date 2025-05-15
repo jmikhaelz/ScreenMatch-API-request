@@ -2,3 +2,7 @@
 # Rellena estos valores con tus credenciales reales
 
 omdbapi_key=KEY-here
+
+# Asignacion de directorio para archivos
+
+output.directory=info_titulos/
