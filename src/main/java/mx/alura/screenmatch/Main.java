@@ -1,133 +1,97 @@
 package mx.alura.screenmatch;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
+import java.util.logging.Logger;
 
-import com.google.gson.FieldNamingPolicy;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
 import mx.alura.screenmatch.exceptions.ErrorValueDuracionException;
 import mx.alura.screenmatch.herramientas.ConfigUtils;
+import mx.alura.screenmatch.herramientas.FileHistory;
 import mx.alura.screenmatch.herramientas.LimpiarConsola;
-import mx.alura.screenmatch.herramientas.TituloOmdbApi;
+import mx.alura.screenmatch.herramientas.ResponseApi;
 import mx.alura.screenmatch.modelos.Titulo;
 
 public class Main {
+    private static final Logger logger = Logger.getLogger(Main.class.getName());
+    private static final LimpiarConsola tool = new LimpiarConsola();
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        // Asignar valores desde la class, para manejos del proyecto
+        // Limpiar Consola
+        tool.start();
+        // Configuracion del entorno
         String apiKey = ConfigUtils.getProperty("omdbapi_key");
         String outputDir = ConfigUtils.getProperty("output.directory");
+        validarConfiguracion(apiKey, outputDir);
+        // Manejo de los resultados/respuesta de la API
+        List<Titulo> history = new ArrayList<>();
+        // Variables de entrada
+        Scanner in = new Scanner(System.in);
+        // Manjeo de Entrada de peticiones (Titulos)
+        while (true) {
+            try {
+                System.out.println("================================================================================");
+                // Solicitud de busqueda
+                logger.info("Para Salir ingrese exit, Si no es el caso continue con");
+                System.out.print("\tIngresar el título de la película: ");
+                String queryTitle = in.nextLine().trim();
+                // Validacion
+                if (queryTitle.equalsIgnoreCase("exit")) {
+                    break;
+                } else if (queryTitle.isBlank()) {
+                    tool.start();
+                    logger.warning("El título de la película no puede estar vacío."
+                            + "Intenta nuevamente.");
+                    continue;
+                }
+                // Procesar respuesta de la API
+                ResponseApi response = new ResponseApi(queryTitle, apiKey);
+                if (response.obtenerTituloDesdeApi() != null) {
+                    System.out.println(response.obtenerTituloDesdeApi());
+                    history.add(response.obtenerTituloDesdeApi());
+                } else {
+                    logger.severe("No se encontró la película con el título: " +
+                            queryTitle);
+                }
+            } catch (JsonSyntaxException e) {
+                tool.start();
+                logger.severe("Hubo un problema al procesar la respuesta. " +
+                        "Verifica que la API esté funcionando correctamente.");
+            } catch (ErrorValueDuracionException e) {
+                System.out.println("WARNING : " + e.getMessage());
+            } catch (Exception e) {
+                tool.start();
+                logger.warning(e.getMessage());
+            }
+        }
+        // Reporte de titulos almacenados a JSON
+        in.close();
+        tool.start();
+        logger.info("=========Titulos encontrados==========");
+        for (Titulo titulo : history) {
+            System.out.println(" - " + titulo);
+        }
+        FileHistory progress = new FileHistory(history, outputDir);
+        progress.toFile();
+        System.out.println("===================================");
+        System.out.println("\nFinalizacion del Programa");
+    }
 
+    // Validacion protiedades del proyecto
+    private static void validarConfiguracion(String apiKey, String outputDir) {
         if (apiKey == null) {
-            new LimpiarConsola().start();
-            System.out.println("\t[ERROR] API Key no encontrada. Por favor, verifica tu archivo de configuración.");
-            return;
+            tool.start();
+            logger.warning("API Key no encontrada. Por favor, verifica tu archivo de configuración.");
+            System.exit(1);
         }
         if (outputDir == null) {
-            new LimpiarConsola().start();
-            System.out.println("\t[ERROR] Directorio no encontrada. Por favor, verifica tu archivo de configuración.");
-            return;
-        }
-
-        // Definir el título de la película que quieres buscar
-        new LimpiarConsola().start();
-        try (Scanner in = new Scanner(System.in)) {
-            System.out.print("\n[INFO] Ingresa el título de la película: ");
-            String movieTitle = in.nextLine().trim(); // Usamos nextLine() para permitir títulos con espacios.
-
-            if (movieTitle.isEmpty()) {
-                System.out
-                        .println("\t[ADVERTENCIA] El título de la película no puede estar vacío. Intenta nuevamente.");
-                return;
-            }
-            String encodedTitle = URLEncoder.encode(movieTitle, StandardCharsets.UTF_8.toString());
-
-            // Construir la URL con el título de la película y la API Key
-            String urlString = "http://www.omdbapi.com/?t=" + encodedTitle + "&apikey=" + apiKey;
-
-            // Crear cliente HTTP
-            HttpClient client = HttpClient.newHttpClient();
-
-            // Crear solicitud HTTP
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(urlString))
-                    .build();
-
-            // Enviar la solicitud y obtener la respuesta
-            HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
-
-            String resp_json = response.body();
-
-            // Imprimir la respuesta JSON
-            /*
-             * Forma de imprementacion de JSON a Class
-             * 1.- En este caso agregamos directo la class Titulo, para los valores de JSON,
-             * con ayuda de la alias @SerializedName("Atributo-JSON")
-             * CODE:
-             * Gson gson = new Gson();
-             * Titulo movie_trans = gson.fromJson(resp_json, Titulo.class);
-             * 
-             * 2.- En este caso agregamos un record para la transformacion de daros de JSON
-             * a la class Titulo
-             */
-
-            Gson gson = new GsonBuilder()
-                    .setFieldNamingPolicy(
-                            FieldNamingPolicy.UPPER_CAMEL_CASE)
-                    .create();
-            TituloOmdbApi movie_resp = gson.fromJson(resp_json, TituloOmdbApi.class);
-            // Mostrar el resultado
-            if (movie_resp != null && movie_resp.title() != null) {
-                Titulo movie_trans = new Titulo(movie_resp);
-                System.out.println("\n[RESULTADO] Título encontrado:");
-                System.out.println("\t" + movie_trans);
-
-                // Asegurar que la carpeta exista
-                File directorio = new File(outputDir);
-                if (!directorio.exists()) {
-                    if (!directorio.mkdirs()) {
-                        throw new IOException("No se pudo crear el directorio: " + outputDir);
-                    }
-                }
-
-                // Almacenar el dato
-                File outputFile = new File(directorio, "titulos.txt");
-                try (BufferedWriter printFile = new BufferedWriter(new FileWriter(outputFile, true))) { // true = modo append
-                    printFile.write(movie_trans.toString());
-                    printFile.newLine();
-                    System.out.println("Archivo actualizado en: " + outputFile.getAbsolutePath());
-                }
-
-            } else {
-                System.out.println("\n[ERROR] No se encontró la película con el título: " +
-                        movieTitle);
-            }
-        } catch (JsonSyntaxException e) {
-            new LimpiarConsola().start();
-            System.out.println("\n[ERROR] Hubo un problema al procesar la respuesta. " +
-                    "Verifica que la API esté funcionando correctamente.");
-            e.printStackTrace();
-        } catch (ErrorValueDuracionException e) {
-            System.out.println("\n[ERROR] Ocurrió un error inesperado: " + e.getMessage());
-        } catch (Exception e) {
-            // new LimpiarConsola().start();
-            System.out.println("\n[ERROR] Ocurrió un error inesperado: " + e.getMessage());
-            e.printStackTrace();
-        } finally {
-            System.out.println("[>] Finalizo el programa!");
+            tool.start();
+            logger.warning("Directorio no encontrada. Por favor, verifica tu archivo de configuración.");
+            System.exit(1);
         }
     }
+
 }
