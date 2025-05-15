@@ -131,7 +131,9 @@ java -cp bin:lib/gson-2.8.8.jar mx.alura.screenmatch.Main
 │   │   │               │   └── ErrorValueDuracionException.java
 │   │   │               ├── herramientas  # Clases auxiliares.
 │   │   │               │   ├── ConfigUtils.java	#Clase para el manejo del archivo de propiedades
-│   │   │               │   ├── LimpiarConsola.java
+│   │   |		|   ├── FileHistory.class	#Clase para almacenar peticiones a la API en formato JSON
+│   │   |		|   ├── LimpiarConsola.class	#Clase para llamado a limpiar terminal
+│   │   |		|   ├── ResponseApi.class	#Clase para las peticiones a la API y procesamiento
 │   │   │               │   └── TituloOmdbApi.java	#Record inmutable para la estancia del JSON
 │   │   │               ├── Main.java      # Punto de entrada del programa (método main).
 │   │   │               └── modelos  # Modelos que representan las entidades de la aplicación.
