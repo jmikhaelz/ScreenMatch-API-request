@@ -1,7 +1,9 @@
 package mx.alura.screenmatch;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -9,7 +11,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
-import java.util.Properties;
 import java.util.Scanner;
 
 import com.google.gson.FieldNamingPolicy;
@@ -18,6 +19,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
 import mx.alura.screenmatch.exceptions.ErrorValueDuracionException;
+import mx.alura.screenmatch.herramientas.ConfigUtils;
 import mx.alura.screenmatch.herramientas.LimpiarConsola;
 import mx.alura.screenmatch.herramientas.TituloOmdbApi;
 import mx.alura.screenmatch.modelos.Titulo;
@@ -25,12 +27,18 @@ import mx.alura.screenmatch.modelos.Titulo;
 public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        // Leer la API Key desde el archivo config.properties
-        String apiKey = getApiKeyFromConfig();
+        // Asignar valores desde la class, para manejos del proyecto
+        String apiKey = ConfigUtils.getProperty("omdbapi_key");
+        String outputDir = ConfigUtils.getProperty("output.directory");
 
         if (apiKey == null) {
             new LimpiarConsola().start();
             System.out.println("\t[ERROR] API Key no encontrada. Por favor, verifica tu archivo de configuración.");
+            return;
+        }
+        if (outputDir == null) {
+            new LimpiarConsola().start();
+            System.out.println("\t[ERROR] Directorio no encontrada. Por favor, verifica tu archivo de configuración.");
             return;
         }
 
@@ -81,11 +89,28 @@ public class Main {
                             FieldNamingPolicy.UPPER_CAMEL_CASE)
                     .create();
             TituloOmdbApi movie_resp = gson.fromJson(resp_json, TituloOmdbApi.class);
-            Titulo movie_trans = new Titulo(movie_resp);
             // Mostrar el resultado
-            if (movie_trans != null && movie_trans.getNombre() != null) {
+            if (movie_resp != null && movie_resp.title() != null) {
+                Titulo movie_trans = new Titulo(movie_resp);
                 System.out.println("\n[RESULTADO] Título encontrado:");
                 System.out.println("\t" + movie_trans);
+
+                // Asegurar que la carpeta exista
+                File directorio = new File(outputDir);
+                if (!directorio.exists()) {
+                    if (!directorio.mkdirs()) {
+                        throw new IOException("No se pudo crear el directorio: " + outputDir);
+                    }
+                }
+
+                // Almacenar el dato
+                File outputFile = new File(directorio, "titulos.txt");
+                try (BufferedWriter printFile = new BufferedWriter(new FileWriter(outputFile, true))) { // true = modo append
+                    printFile.write(movie_trans.toString());
+                    printFile.newLine();
+                    System.out.println("Archivo actualizado en: " + outputFile.getAbsolutePath());
+                }
+
             } else {
                 System.out.println("\n[ERROR] No se encontró la película con el título: " +
                         movieTitle);
@@ -103,24 +128,6 @@ public class Main {
             e.printStackTrace();
         } finally {
             System.out.println("[>] Finalizo el programa!");
-        }
-    }
-
-    // Método para obtener la API Key desde el archivo config.properties
-    private static String getApiKeyFromConfig() {
-        Properties properties = new Properties();
-        try (InputStream input = Main.class.getClassLoader().getResourceAsStream("config/config.properties")) {
-            if (input == null) {
-                System.out.println(
-                        "\n[ERROR] No se pudo encontrar el archivo de configuración 'config/config.properties'.");
-                return null;
-            }
-            properties.load(input);
-            return properties.getProperty("omdbapi_key");
-        } catch (IOException ex) {
-            System.out.println("\n[ERROR] Hubo un problema al leer el archivo de configuración: " + ex.getMessage());
-            ex.printStackTrace();
-            return null;
         }
     }
 }

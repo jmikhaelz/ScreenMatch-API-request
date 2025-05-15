@@ -130,7 +130,9 @@ java -cp bin:lib/gson-2.8.8.jar mx.alura.screenmatch.Main
 │   │   │               ├── exceptions  #Manejos de Excepciones sobre casos de uso
 │   │   │               │   └── ErrorValueDuracionException.java
 │   │   │               ├── herramientas  # Clases auxiliares.
-│   │   │               │   └── LimpiarConsola.java
+│   │   │               │   ├── ConfigUtils.java	#Clase para el manejo del archivo de propiedades
+│   │   │               │   ├── LimpiarConsola.java
+│   │   │               │   └── TituloOmdbApi.java	#Record inmutable para la estancia del JSON
 │   │   │               ├── Main.java      # Punto de entrada del programa (método main).
 │   │   │               └── modelos  # Modelos que representan las entidades de la aplicación.
 │   │   │                   ├── Episodio.java
@@ -152,7 +154,7 @@ java -cp bin:lib/gson-2.8.8.jar mx.alura.screenmatch.Main
 │   │       └── alura
 │   │           └── screenmatch
 │   │               ├── calculos
-│   │     
+│   │   
       │   ├── CalculadoraDeTiempo.class
 │   │               │   ├── Clasificable.class
 │   │               │   └── FiltroRecomendacion.class
